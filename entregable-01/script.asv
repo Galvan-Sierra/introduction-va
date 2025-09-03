@@ -1,0 +1,152 @@
+%% Limpiar
+clc, clear all, close all;
+
+%% Leer imangen
+I = imread("input.jpeg");
+I_double = im2double(I);
+
+
+%% Información de la imagen 
+imfinfo("input.jpeg")
+
+
+%% Recorte de imagen 
+% Definir rangos de recorte
+fila_inicio = 300;
+fila_fin = 479;
+columna_inicio = 200;
+columna_fin = 439;
+
+I_recortada = I(fila_inicio:fila_fin, columna_inicio:columna_fin, :);
+imshow(I_recortada)
+
+
+%% Escala de grises
+I_Gray = rgb2gray(I);
+imshow(I_Gray)
+
+
+%% Imagen T. Gamma =2.1 
+
+% Parámetros de transformación gamma
+gamma = 2.1;
+c = 1;  % Constante de proporcionalidad
+
+% Normalizar a rango [0,1] para aplicar gamma
+I_normalized = I_double / 255;
+
+% Aplicar transformación gamma
+I_gamma_basic = c * (I_normalized .^ gamma);
+
+% Convertir de vuelta a uint8
+I_gamma_basic = uint8(I_gamma_basic * 255);
+
+imshow(I_gamma_basic)
+
+%% Imagen T. Gamma =0.5
+gamma = 0.5;
+
+% Aplicar transformación gamma
+I_gamma_basic_2 = c * (I_normalized .^ gamma);
+
+% Convertir de vuelta a uint8
+I_gamma_basic = uint8(I_gamma_basic * 255);
+
+imshow(I_gamma_basic)
+
+
+
+%% Imagen T. Logarítmica
+
+% Aplicar transformación logarítmica
+c = 255 / log(1 + 255);  % Constante de normalización para rango [0,255]
+I_log_basic = c * log(1 + I_double);
+
+% Convertir de vuelta a uint8
+I_log_basic = uint8(I_log_basic);
+
+imshow(I_log_basic)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%% Separar por banda
+I_R=I(:,:,1);
+I_G=I(:,:,2);
+I_B=I(:,:,end);
+
+[R,G,B]=imsplit(I);
+
+%% Determinar el tamaño
+[nf,nc,nb] = size(I);
+[nf,nc] = size(I_B);
+
+%% Visualización
+
+image(I); % visualización
+axis off; % quitar los ejes
+axis image; % conservar relación de aspecto
+
+% un solo canal
+image(I_G); % visualización
+axis off; % quitar los ejes
+axis image; % conservar relación de aspecto
+colormap("gray") 
+
+figure %crea otra ventana, para evitar sobreescritura
+image(I_B)
+axis off; 
+axis image; 
+colormap("gray") 
+
+%% visualización image tools
+imshow(I); %abreviación para lo anterior
+imtool(I); %editor
+
+%% guardar imagenes
+imwrite(I_R, 'Image_Red.jpg');
+imwrite(I_R, 'Image_Blue.tif');
+
+%% conversión a escala de grises
+
+I_Gray1= rgb2gray(I);
+
+figure
+subplot(2,1,1), imshow(I)
+subplot(2,1,2), imshow(I_Gray1)
+
+%% Ejercicio de clase
+
+I=imread("ejemplo_va\Image.jpg");
+I_Gray = rgb2gray(I);
+[R,G,B]=imsplit(I);
+
+figure
+subplot(2,3,1), imshow(I), title("color");
+subplot(2,3,2), imshow(I_Gray), title("escala");
+subplot(2,3,3), imshow(imbinarize(I_Gray)), title("binario");
+subplot(2,3,4), imshow(R), title("red");
+subplot(2,3,5), imshow(G), title("green");
+subplot(2,3,6), imshow(B), title("blue");
+
