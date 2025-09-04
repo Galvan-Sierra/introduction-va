@@ -276,3 +276,64 @@ J = uint8(J);
 
 % Mostrar resultado
 imshow(J)
+
+
+%% ==========================================================
+% Versiones optimizadas punto 06
+
+% Limpiar procesos
+clc, clear all, close all;
+
+% Leer imágenes
+I_in = imread("punto_06\Input.tif");
+I_out = imread("punto_06\Output.tif");
+
+% Transformación a Escala de Grises
+I_Gray = rgb2gray(I_in);
+I_double_gray = im2double(I_Gray);
+
+% Transformación Negativa
+J = imcomplement(I_double_gray);
+
+% Transformación Gamma (parámetros optimizados)
+gamma = 1.0;
+brightness = 1.00;
+J = J * brightness;
+J = J .^ gamma;
+
+% Transformación Lineal a Trozos (ajuste final sutil)
+r1 = 0.01;
+r2 = 0.99;
+s1 = 0;
+s2 = 1;
+
+% Inicializar salida
+J_piecewise = zeros(size(J));
+
+% Segmento único con mapeo lineal
+idx_range = (J >= r1) & (J <= r2);
+J_piecewise(idx_range) = ((s2-s1)/(r2-r1)) * (J(idx_range)-r1) + s1;
+
+% Valores fuera del rango
+J_piecewise(J < r1) = s1;
+J_piecewise(J > r2) = s2;
+
+J = J_piecewise;
+
+% Coincidencia de histograma con imagen objetivo
+J = imhistmatch(J, im2double(I_out));
+
+% Convertir a uint8
+J_uint8 = im2uint8(J);
+
+% Calcular SSIM y mostrar resultados
+ssim_val = ssim(J_uint8, I_out);
+fprintf('=== TRANSFORMACIÓN ALTERNATIVA ===\n');
+fprintf('SSIM: %.4f (%.2f%%) - Gamma=%.1f, Brightness=%.2f\n', ...
+    ssim_val, ssim_val*100, gamma, brightness);
+
+% Visualización de resultados
+figure('Position', [100 100 800 400]);
+imshowpair(I_out, J_uint8, 'montage');
+title(sprintf('Output (referencia) vs Transformada Alternativa, SSIM=%.4f (%.2f%%)', ...
+    ssim_val, ssim_val*100));
