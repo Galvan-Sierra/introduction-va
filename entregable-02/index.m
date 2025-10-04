@@ -1,13 +1,67 @@
 %% ==========================================================
 % Limpiar procesos
-% ===========================================================
-
-clc, clear all, close all;
+clc; clear; close all;
 
 %% ==========================================================
 % Leer imagen
-% ===========================================================
 
-I = imread("input.png");
-imfinfo("input.png");
+% Laboratorio
+% I = imread('Image.jpg');
+
+% Eveneot
+I = imread('input.png');
+
+I_gray = rgb2gray(I);
+
+%% ==========================================================
+% Mostrar imagen en escala de grises y su histograma
+figure;
+
+subplot(2,2,1);
+imshow(I_gray);
+title('Imagen en escala de grises');
+
+subplot(2,2,2);
+histogram(I_gray);
+title('Histograma de la imagen original');
+
+%% ==========================================================
+% Ecualización del histograma
+I_eq = histeq(I_gray);
+
+subplot(2,2,3);
+imshow(I_eq);
+title('Imagen ecualizada');
+
+subplot(2,2,4);
+histogram(I_eq);
+title('Histograma de la imagen ecualizada');
+
+
+%% ==========================================================
+% Calcular estadísticas de intensidades
+
+% Histograma de la imagen original
+[counts, bins] = imhist(I_gray);
+
+% 1. Nivel de intensidad con mayor probabilidad en la imagen original
+[~, idx_max_original] = max(counts);
+nivel_original = idx_max_original - 1; % porque bins va de 0 a 255
+prob_original = (counts(idx_max_original) / numel(I_gray)) * 100;
+
+% 2. Nivel de intensidad con mayor probabilidad en la imagen ecualizada
+[counts_eq, bins_eq] = imhist(I_eq);
+[~, idx_max_eq] = max(counts_eq);
+nivel_eq = idx_max_eq - 1;
+prob_eq = (counts_eq(idx_max_eq) / numel(I_eq)) * 100;
+
+% 3. Probabilidad de que un píxel tenga intensidad 173 en la original
+prob_173 = (counts(174) / numel(I_gray)) * 100; % índice 174 corresponde a intensidad 173
+
+%% ==========================================================
+% Mostrar resultados
+fprintf('Nivel original: %d, Probabilidad: %.2f%%\n', nivel_original, prob_original);
+fprintf('Nivel ecualizado: %d, Probabilidad: %.2f%%\n', nivel_eq, prob_eq);
+fprintf('Probabilidad de intensidad 173 en original: %.2f%%\n', prob_173);
+
 
