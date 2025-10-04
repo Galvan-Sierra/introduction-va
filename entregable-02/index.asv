@@ -6,12 +6,12 @@ clc; clear; close all;
 % Leer imagen
 
 % Laboratorio
-% I = imread('Image.jpg');
-% I_reference = imread('coins.png');
+I = imread('Image.jpg');
 
+I_reference = imread('coins.png');
+% I_reference = imread('Referencia.tif');
 % Eveneot
-I = imread('input.png');
-I_reference = imread('Referencia.tif');
+% I = imread('input.png');
 
 I_gray = rgb2gray(I);
 
@@ -77,15 +77,15 @@ figure;
 
 subplot(2,2,1);
 imshow(I_ref_gray);
-title('Referencia en escala de grises');
+title('Imagen de referencia en escala de grises');
 
 subplot(2,2,2);
 histogram(I_ref_gray);
-title('Histograma de Referencia');
+title('Histograma de la imagen de referencia');
 
 subplot(2,2,3);
 imshow(J);
-title('Imagen Procesada');
+title('Imagen con histograma especificado');
 
 subplot(2,2,4);
 histogram(J);
