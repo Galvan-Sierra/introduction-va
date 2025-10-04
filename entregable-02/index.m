@@ -90,3 +90,107 @@ title('Imagen Procesada');
 subplot(2,2,4);
 histogram(J);
 title('Histograma de la imagen especificada');
+
+
+%% ==========================================================
+% Generar 3 imágenes con ruido uniforme
+
+% Distintos niveles de ruido
+levels = [30, 40, 80];  % puedes variar estos valores
+I_noise = cell(1,3);
+
+for k = 1:3
+    noise = uint8(levels(k) .* rand(size(I_gray)));
+    I_noise{k} = imadd(I_gray, noise); % Imagen con ruido
+end
+
+%% ==========================================================
+% Definir filtros a aplicar
+
+% Filtros uniformes (promedio)
+uniform_windows = [3, 5, 7];
+
+% Filtros gaussianos
+gaussian_windows = [3, 5, 7];
+sigmas = [0.8, 1.8];
+
+%% ==========================================================
+% Aplicar filtros a cada imagen con ruido
+% ==========================================================
+ssim_table = zeros(9,3); % matriz 9 filtros x 3 imágenes ruidosas
+filter_names = {
+    'F. Uniforme 3x3'
+    'F. Uniforme 5x5'
+    'F. Uniforme 7x7'
+    'Gauss 3x3  σ=0.8'
+    'Gauss 5x5  σ=0.8'
+    'Gauss 7x7  σ=0.8'
+    'Gauss 3x3  σ=1.8'
+    'Gauss 5x5  σ=1.8'
+    'Gauss 7x7  σ=1.8'
+    };
+
+for n = 1:3  % recorrer las 3 imágenes ruidosas
+    idx = 1;
+    
+    % ---- Filtros Uniformes ----
+    for w = uniform_windows
+        h = fspecial('average', [w w]);
+        I_filt = imfilter(I_noise{n}, h, 'replicate');
+        
+        % Calcular SSIM con respecto a la imagen original
+        ssim_table(idx,n) = ssim(I_filt, I_gray);
+        idx = idx + 1;
+    end
+    
+    % ---- Filtros Gaussianos ----
+    for sigma = sigmas
+        for w = gaussian_windows
+            h = fspecial('gaussian', [w w], sigma);
+            I_filt = imfilter(I_noise{n}, h, 'replicate');
+            
+            % Calcular SSIM
+            ssim_table(idx,n) = ssim(I_filt, I_gray);
+            idx = idx + 1;
+        end
+    end
+end
+
+%% ==========================================================
+% Mostrar tabla de SSIM en porcentaje
+
+ssim_percent = ssim_table * 100;
+T = array2table(ssim_percent, 'RowNames', filter_names, ...
+    'VariableNames', {'ImagenRuido1','ImagenRuido2','ImagenRuido3'})
+
+%% ==========================================================
+% Mostrar resultados para la primera imagen con ruido
+
+% Imagen con ruido 1
+figure;
+imshow(I_noise{1});
+title('Imagen con Ruido 1');
+
+% Buscar el mejor filtro para la Imagen Ruido 1
+[~, best_idx] = max(ssim_table(:,1));
+best_filter_name = filter_names{best_idx};
+
+% Volver a aplicar el mejor filtro a Imagen Ruido 1
+if best_idx <= 3
+    w = uniform_windows(best_idx);
+    h = fspecial('average', [w w]);
+else
+    group = best_idx - 3;
+    sigma_group = ceil(group/3);
+    sigma = sigmas(sigma_group);
+    w = gaussian_windows(mod(group-1,3)+1);
+    h = fspecial('gaussian', [w w], sigma);
+end
+I_best = imfilter(I_noise{1}, h, 'replicate');
+
+figure;
+imshow(I_best);
+title(['Mejor filtro: ' best_filter_name]);
+
+fprintf('SSIM= %.2f%%\n', max(ssim_table(:,1))*100);
+fprintf('Mejor Filtro: %s\n', best_filter_name);
