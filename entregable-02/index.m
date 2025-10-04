@@ -164,33 +164,42 @@ T = array2table(ssim_percent, 'RowNames', filter_names, ...
     'VariableNames', {'ImagenRuido1','ImagenRuido2','ImagenRuido3'})
 
 %% ==========================================================
-% Mostrar resultados para la primera imagen con ruido
-
-% Imagen con ruido 1
-figure;
-imshow(I_noise{1});
-title('Imagen con Ruido 1');
-
-% Buscar el mejor filtro para la Imagen Ruido 1
-[~, best_idx] = max(ssim_table(:,1));
-best_filter_name = filter_names{best_idx};
-
-% Volver a aplicar el mejor filtro a Imagen Ruido 1
-if best_idx <= 3
-    w = uniform_windows(best_idx);
-    h = fspecial('average', [w w]);
-else
-    group = best_idx - 3;
-    sigma_group = ceil(group/3);
-    sigma = sigmas(sigma_group);
-    w = gaussian_windows(mod(group-1,3)+1);
-    h = fspecial('gaussian', [w w], sigma);
+% Resultados individuales por cada imagen con ruido
+% ==========================================================
+for i = 1:3
+    fprintf('\n==========================================================\n');
+    fprintf('Resultados – Imagen Con Ruido %d\n', i);
+    fprintf('==========================================================\n');
+    
+    % Mostrar imagen con ruido
+    figure;
+    imshow(I_noise{i});
+    title(sprintf('Imagen con Ruido %d', i));
+    
+    % Identificar mejor filtro
+    [~, best_idx] = max(ssim_table(:,i));
+    best_filter_name = filter_names{best_idx};
+    best_ssim = ssim_table(best_idx,i) * 100;
+    
+    % Volver a aplicar el mejor filtro
+    if best_idx <= 3
+        w = uniform_windows(best_idx);
+        h = fspecial('average', [w w]);
+    else
+        group = best_idx - 3;
+        sigma_group = ceil(group/3);
+        sigma = sigmas(sigma_group);
+        w = gaussian_windows(mod(group-1,3)+1);
+        h = fspecial('gaussian', [w w], sigma);
+    end
+    I_best = imfilter(I_noise{i}, h, 'replicate');
+    
+    % Mostrar la mejor imagen filtrada
+    figure;
+    imshow(I_best);
+    title(sprintf('Mejor filtro - Imagen Ruido %d: %s', i, best_filter_name));
+    
+    % Mostrar resultados en consola
+    fprintf('\nSSIM = %.2f%%\n', best_ssim);
+    fprintf('Mejor Filtro: %s\n', best_filter_name);
 end
-I_best = imfilter(I_noise{1}, h, 'replicate');
-
-figure;
-imshow(I_best);
-title(['Mejor filtro: ' best_filter_name]);
-
-fprintf('SSIM= %.2f%%\n', max(ssim_table(:,1))*100);
-fprintf('Mejor Filtro: %s\n', best_filter_name);
