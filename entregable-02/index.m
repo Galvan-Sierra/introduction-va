@@ -203,3 +203,130 @@ for i = 1:3
     fprintf('\nSSIM = %.2f%%\n', best_ssim);
     fprintf('Mejor Filtro: %s\n', best_filter_name);
 end
+
+%% ==========================================================
+% PUNTO 4 : Operadores de sobel
+
+% Convierte a tipo double
+I_gray = double(I_gray);
+
+%% ==========================================================
+% Definir los kernels Sobel
+sobel_horizontal = [1 2 1; 0 0 0; -1 -2 -1];
+sobel_vertical = [1 0 -1; 2 0 -2; 1 0 -1];
+
+%% ==========================================================
+% Aplicar convolución con los kernels Sobel
+bordes_horizontal = conv2(I_gray, sobel_horizontal, 'same');
+bordes_vertical = conv2(I_gray, sobel_vertical, 'same');
+
+%% ==========================================================
+% Calcular la magnitud del gradiente (clásico)
+magnitud_sobel = sqrt(bordes_horizontal.^2 + bordes_vertical.^2);
+
+%% ==========================================================
+% Calcular la imagen resultado sumando valores absolutos
+sobel_sum_abs = abs(bordes_horizontal) + abs(bordes_vertical);
+
+%% ==========================================================
+% Normalizar resultados para visualización
+bordes_horizontal_norm = uint8(255 * mat2gray(bordes_horizontal));
+bordes_vertical_norm   = uint8(255 * mat2gray(bordes_vertical));
+magnitud_sobel_norm    = uint8(255 * mat2gray(magnitud_sobel));
+sobel_sum_abs_norm     = uint8(255 * mat2gray(sobel_sum_abs));
+
+%% ==========================================================
+% Mostrar resultados
+figure;
+subplot(2,2,1);
+imshow(uint8(I_gray), []);
+title('Imagen original');
+subplot(2,2,2);
+imshow(bordes_horizontal_norm, []);
+title('Sobel Horizontal');
+subplot(2,2,3);
+imshow(bordes_vertical_norm, []);
+title('Sobel Vertical');
+subplot(2,2,4);
+imshow(sobel_sum_abs_norm, []);
+title('Sobel suma de absolutos');
+
+figure;
+imshow(magnitud_sobel_norm, []);
+title('Magnitud Sobel (clásica)');
+
+%% ==========================================================
+% PUNTO 4 : Laplaciano de 8 vecinos
+
+%% ==========================================================
+% Definir el kernel Laplaciano de 8 vecinos
+laplaciano_8vecinos = [1 1 1; 1 -8 1; 1 1 1];
+
+%% ==========================================================
+% Aplicar convolución con Laplaciano de 8 vecinos
+bordes_laplaciano = conv2(I_gray, laplaciano_8vecinos, 'same');
+
+%% ==========================================================
+% Tomar valor absoluto de la respuesta del filtro
+bordes_laplaciano_abs = abs(bordes_laplaciano);
+
+%% ==========================================================
+% Normalizar para visualización
+laplaciano_norm = uint8(255 * mat2gray(bordes_laplaciano_abs));
+
+%% ==========================================================
+% Mostrar resultados
+figure;
+subplot(2,2,1);
+imshow(uint8(I_gray), []);
+title('Imagen original');
+subplot(2,2,1);
+imshow(laplaciano_norm, []);
+title('Laplaciano 8 vecinos');
+
+%% ==========================================================
+% PUNTO 5 : Realce bordes Laplaciano de 4 vecinos
+%% ==========================================================
+% Convierte a tipo double
+I_gray = double(I_gray);
+%% ==========================================================
+% Definir el kernel Laplaciano de 4 vecinos
+laplaciano_4vecinos = [0 1 0; 1 -4 1; 0 1 0];
+%% ==========================================================
+% Aplicar la convolución (detección de bordes)
+bordes_lap4 = conv2(I_gray, laplaciano_4vecinos, 'same');
+%% ==========================================================
+% Realce de bordes: suma la imagen original con el resultado (puedes multiplicar por una constante para mayor efecto)
+realce_lap4 = I_gray + bordes_lap4;
+%% ==========================================================
+% Normalizar para visualización
+realce_lap4_norm = uint8(255 * mat2gray(realce_lap4));
+%% ==========================================================
+% Mostrar la imagen realzada
+figure;
+imshow(realce_lap4_norm, []);
+title('Realce de bordes Laplaciano 4 vecinos');
+
+%% ==========================================================
+% PUNTO 5 : Realce bordes Laplaciano de 8 vecinos
+%% ==========================================================
+% Definir el kernel Laplaciano de 8 vecinos
+laplaciano_8vecinos = [1 1 1; 1 -8 1; 1 1 1];
+
+%% ==========================================================
+% Aplicar la convolución (detección de bordes)
+bordes_lap8 = conv2(I_gray, laplaciano_8vecinos, 'same');
+
+%% ==========================================================
+% Realce de bordes: suma la imagen original con el resultado
+realce_lap8 = I_gray + bordes_lap8;
+
+%% ==========================================================
+% Normalizar para visualización
+realce_lap8_norm = uint8(255 * mat2gray(realce_lap8));
+
+%% ==========================================================
+% Mostrar la imagen realzada
+figure;
+imshow(realce_lap8_norm, []);
+title('Realce de bordes Laplaciano 8 vecinos');
